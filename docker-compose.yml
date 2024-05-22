@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  mysqlDepartment:
+    image: mysql:latest
+    restart: always
+    container_name: mysqlDepartment
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: departmentDocker
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_department:/var/lib/mysql
+    networks:
+      - appnet
+  mysqlEmployee:
+    image: mysql:latest
+    restart: always
+    container_name: mysqlEmployee
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: employeeDocker
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql_employee:/var/lib/mysql
+    networks:
+      - appnet
+  employee-service:
+    restart: always
+    build:
+      context: ./employee
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysqlEmployee
+    environment:
+      MYSQL_HOST: mysqlEmployee
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MSSQL_PASSWORD: root
+    networks:
+      - appnet
+  department-service:
+    restart: always
+    build:
+      context: ./department
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysqlDepartment
+    environment:
+      MYSQL_HOST: mysqlDepartment
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MSSQL_PASSWORD: root
+    networks:
+      - appnet
+volumes:
+  mysql_department:
+  mysql_employee:
+networks:
+  appnet:
